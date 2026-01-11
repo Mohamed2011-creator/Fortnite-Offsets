@@ -9,13 +9,13 @@ namespace offsets {
     uintptr_t UWorld = 0x17B96228;
     uintptr_t UWorldXorKey = 0x7B40E797ULL;
     uintptr_t GNames = 0x17A50D00;
-    uintptr_t GEngine = 0x175CAC68;
+    uintptr_t GEngine = 0x17B97B28;
     uintptr_t GObjects = 0x17B2DC58;
-    uintptr_t GObjectsCount = 0x17560ED4;
-    uintptr_t StaticFindObject = 0x5E4332;
+    uintptr_t GObjectsCount = 0x17B2DC64;
+    uintptr_t StaticFindObject = 0x71B76C;
 
-    uintptr_t ProcessEvent = 0x949CA;
-    uintptr_t ProcessEventIndex = 0x98;
+    uintptr_t ProcessEvent = 0x63B7E;
+    in32_t ProcessEventIndex = 71;
 
     // ===== Player / Controller =====
     uintptr_t LocalPlayers = 0x38;
