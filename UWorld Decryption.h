@@ -4,7 +4,7 @@
 
 inline uint64_t DecryptUworld(uint64_t value)
 {
-    return (value ^ 0xFFFFFFFFD599D092ULL) + 0x248ULL;
+    return (value ^ 0xFFFFFFFFD599D092ULL);
 }
 
 uintptr_t encryptedUWorld = Memory::Read<uintptr_t>(Kernel::state.process_base + offsets::UWorld);
