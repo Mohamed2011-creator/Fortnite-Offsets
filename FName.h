@@ -1,100 +1,84 @@
 #pragma once
-#include "includes.h"
 
-namespace FName
+struct f_name_t
 {
-    constexpr uint64_t NAMES_TABLE_RVA = 0x17A50D00;
-    constexpr uint64_t CHUNK_OFFSET_BASE = 0xDF2;
-    
-    constexpr uint32_t INDEX_XOR_KEY = 0xA426EB57;
-    constexpr uint32_t STRING_SEED_MULTIPLIER = 8312;
-    constexpr uint32_t STRING_SEED_BASE = 1055325479;
-    constexpr uint8_t STRING_XOR_OFFSET = 14;
-    
-    constexpr uint16_t LENGTH_MASK = 0x3FF;
-    constexpr uint16_t LENGTH_XOR_MASK = 0x3FB;
-    constexpr uint16_t REDIRECT_MARKER = 1019;
-    constexpr uint16_t MAX_STRING_LENGTH = 255;
-    constexpr uint8_t HEADER_SIZE = 2;
-    constexpr uint8_t CHUNK_SHIFT = 16;
-    constexpr uint8_t MAX_RETRY_COUNT = 5;
+    unordered_map<int32_t, string> name_cache;
+    mutex cache_mutex;
+    uintptr_t chunk_cache[1024]{};
 
-    int32_t DecryptIndex(int32_t encrypted_index)
+    std::int32_t get_index(std::int32_t index)
     {
-        if (encrypted_index == 0)
+        if (index == 0)
             return 0;
 
-        uint32_t decrypted = (encrypted_index - 1) ^ INDEX_XOR_KEY;
-        
-        if (decrypted == 0xFFFFFFFF)
-            return 0;
+        std::int32_t v3 = std::rotl(static_cast<std::uint32_t>((index - 1) ^ 0x408CE8FF), 18) + 1;
+        std::int32_t v4 = 0x5C0B8A4D;
 
-        return decrypted + 1;
+        if (v3)
+            v4 = v3;
+
+        return v4;
     }
 
-    void DecryptFName(char* str_buffer, int32_t str_length)
+
+    std::string get_string(std::int32_t index)
     {
-        if (str_length <= 0)
-            return;
+        std::int32_t decrypted_index = get_index(index);
 
-        unsigned int cipher_seed = STRING_SEED_MULTIPLIER * str_length + STRING_SEED_BASE;
-
-        for (int i = 0; i < str_length; i++)
-        {
-            str_buffer[i] ^= static_cast<uint8_t>(cipher_seed + STRING_XOR_OFFSET);
-            cipher_seed = STRING_SEED_MULTIPLIER * cipher_seed + STRING_SEED_BASE;
-        }
-    }
-
-    string ToString(int32_t name_index)
-    {
-        int32_t current_index = DecryptIndex(name_index);
-        int attempts = 0;
-
-    ResolveEntry:
-        if (current_index <= 0 || attempts > MAX_RETRY_COUNT)
+    resolve_address:
+        if (decrypted_index <= 0)
             return "";
 
-        const uint64_t chunk_id = static_cast<uint64_t>(current_index >> CHUNK_SHIFT) + CHUNK_OFFSET_BASE;
-        const uintptr_t chunk_address = Memory::Read<uint64_t>(
-            Kernel::state.process_base + NAMES_TABLE_RVA + (chunk_id * sizeof(uint64_t))
-        );
+        std::uint32_t chunk_index = static_cast<std::uint32_t>(decrypted_index) >> 16;
+        std::uint16_t name_entry_index = static_cast<std::uint16_t>(decrypted_index);
 
-        if (!chunk_address)
+        std::uintptr_t gnames_addr = hv::state.process_base + 0x1777E080;
+        std::uintptr_t chunk_ptr_addr = gnames_addr + (static_cast<std::uint64_t>(chunk_index) + 2) * 8;
+        std::uintptr_t chunk_ptr = hv::read<std::uintptr_t>(chunk_ptr_addr);
+
+        if (!chunk_ptr)
             return "";
 
-        const uintptr_t entry_address = chunk_address + (HEADER_SIZE * static_cast<uint16_t>(current_index));
-        const uint16_t entry_header = Memory::Read<uint16_t>(entry_address);
-        const uint16_t raw_length = (entry_header >> 1) & LENGTH_MASK;
+        std::uintptr_t name_pool_chunk = chunk_ptr + (2 * name_entry_index);
+        std::uint16_t header = hv::read<std::uint16_t>(name_pool_chunk);
 
-        // Check for redirect entry
-        if (raw_length == REDIRECT_MARKER)
-        {
-            current_index = DecryptIndex(Memory::Read<int32_t>(entry_address + HEADER_SIZE));
-            attempts++;
-            goto ResolveEntry;
-        }
-
-        const uint16_t actual_length = raw_length ^ LENGTH_XOR_MASK;
-
-        if (actual_length == 0 || actual_length > MAX_STRING_LENGTH)
+        if (static_cast<std::int16_t>(header) < 0)
             return "";
 
-        char name_buffer[MAX_STRING_LENGTH + 1];
+        std::int32_t raw_len = header & 0x3FF;
 
-        for (uint16_t i = 0; i < actual_length && i < MAX_STRING_LENGTH; i++)
+        if (raw_len == 112)
         {
-            name_buffer[i] = Memory::Read<char>(entry_address + HEADER_SIZE + i);
+            std::int32_t new_index = hv::read<std::int32_t>(name_pool_chunk + 6);
+            decrypted_index = get_index(new_index);
+            goto resolve_address;
         }
 
-        name_buffer[actual_length] = '\0';
-        DecryptFName(name_buffer, actual_length);
+        std::int32_t length = raw_len ^ 0x70;
 
-        return string(name_buffer, actual_length);
+        if (length <= 0 || length > 1024)
+            return "";
+
+        std::vector<std::uint8_t> buffer(length);
+        hv::read_raw(name_pool_chunk + 2, buffer.data(), length);
+
+        std::string result(length, '\0');
+        std::uint16_t offset = static_cast<std::uint16_t>(24319 - 6431 * length);
+        std::uint8_t key = static_cast<std::uint8_t>(-31 * length - 120);
+
+        for (std::int32_t i = 0; i < length; ++i)
+        {
+            std::uint32_t idx = (offset + i) % length;
+            result[i] = std::rotl(static_cast<std::uint8_t>(key ^ buffer[idx]), 5);
+        }
+
+        return result;
     }
 
-    string GetFname(int32_t name_index)
+    string get_fname(int32_t index)
     {
-        return ToString(name_index);
+        return get_string(index);
     }
-}
+};
+
+inline f_name_t* FName = new f_name_t();
