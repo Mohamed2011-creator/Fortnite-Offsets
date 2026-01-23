@@ -5,7 +5,7 @@
 
 [![Repository Views](https://komarev.com/ghpvc/?username=urfavhazee&label=Views&color=blueviolet&style=flat-square)](https://github.com/urfavhazee/Fortnite-Offsets)
 [![Stars](https://img.shields.io/github/stars/urfavhazee/Fortnite-Offsets?style=flat-square&color=gold)](https://github.com/urfavhazee/Fortnite-Offsets/stargazers)
-[![Build Version](https://img.shields.io/badge/Build-v39.20-success?style=flat-square)](https://github.com/urfavhazee/Fortnite-Offsets)
+[![Build Version](https://img.shields.io/badge/Build-v39.30-success?style=flat-square)](https://github.com/urfavhazee/Fortnite-Offsets)
 
 </div>
 
